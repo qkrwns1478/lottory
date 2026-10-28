@@ -1,0 +1,52 @@
+data:
+  raw_csv: data/cashlogy-lotto-all.csv
+  csv_path: data/lotto_rounds.csv
+  source_registry: data/source_registry.json
+  target_rounds: 200
+  minimum_rounds: 100
+llm:
+  model: gpt-6-luna
+  base_url: https://api.openai.com/v1/
+embedding:
+  model: text-embedding-3-small
+  batch_size: 64
+vector_store:
+  path: chroma_db
+  round_collection: lotto_rounds_openai
+  document_collection: lotto_documents_openai
+chunking:
+  document_chunk_size: 500
+  document_chunk_overlap: 80
+retrieval:
+  search_type: similarity
+  mmr_fetch_k: 20
+  mmr_lambda_mult: 0.5
+  round_top_k: 3
+  document_top_k: 5
+  rrf_k: 60
+guidance:
+  enabled: true
+  cache_path: data/cache/guidance_cache.json
+  cache_ttl_seconds: 86400
+  timeout: 20
+  max_retries: 2
+  source_url: https://d.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7893&mi=6457
+law:
+  cache_path: data/cache/search_cache.json
+  index_version: v3
+  candidate_limit: 10
+  timeout: 20
+  request_interval: 1.0
+  max_retries: 2
+  backoff_seconds: 1.0
+  cache_ttl_seconds: 86400
+  empty_retry_seconds: 600
+  failed_retry_seconds: 60
+  allowed_titles:
+    - 복권 및 복권기금법
+    - 소득세법
+    - 지방세법
+  article_numbers:
+    복권 및 복권기금법: ["8", "9", "10"]
+    소득세법: ["21", "37", "84", "127", "129"]
+    지방세법: ["103의13"]

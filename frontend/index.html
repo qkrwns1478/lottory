@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LOTTORY</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="workspace">
+      <header>
+        <div>
+          <h1>LOTTORY<span class="dot">.</span></h1>
+        </div>
+        <span class="badge">6 / 45</span>
+      </header>
+      <section class="toolbar" aria-label="조회 설정">
+        <label>
+          선택 회차
+          <select id="round-select" aria-label="선택 회차"></select>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="ai-mode" />
+          AI 근거 답변
+        </label>
+        <button id="clear-chat" type="button">대화 지우기</button>
+      </section>
+      <nav aria-label="기능 선택">
+        <button class="nav active" data-panel="chat" aria-selected="true">
+          질문과 답변
+        </button>
+        <button class="nav" data-panel="recommendation" aria-selected="false">
+          이번 주 번호 추천
+        </button>
+        <button class="nav" data-panel="filter">조건 탐색</button>
+        <button class="nav" data-panel="compare">검색 비교</button>
+        <button class="nav" data-panel="evaluation">RAG 품질 평가</button>
+      </nav>
+      <section id="panel-chat" class="panel">
+        <div class="section-head">
+          <div>
+            <h2>회차 질문</h2>
+            <p>
+              회차를 선택하고 궁금한 내용을 입력하세요. 답변 아래에서 원문을
+              확인할 수 있습니다.
+            </p>
+          </div>
+        </div>
+        <div class="samples">
+          <button data-question="1100회 1등 당첨금과 1등 당첨 게임 수는?">
+            회차 당첨금
+          </button>
+          <button data-question="최근 100회 중 22번이 몇 번 나왔어?">
+            번호 빈도
+          </button>
+          <button data-question="당첨금 수령기한은?">수령기한</button>
+          <button data-question="10억 원의 예상 실수령액은?">세금 계산</button>
+        </div>
+        <div id="chat-log" role="log" aria-label="질문과 답변 기록">
+          <div class="empty">
+            회차를 선택하고 당첨금, 번호, 수령기한 등을 질문하세요.
+          </div>
+        </div>
+        <form id="ask-form">
+          <label for="question">질문</label>
+          <div class="input-row">
+            <textarea
+              id="question"
+              rows="2"
+              maxlength="2000"
+              placeholder="1100회 당첨금은?"
+              required
+            ></textarea>
+            <button type="submit" class="primary">질문하기</button>
+          </div>
+        </form>
+      </section>
+      <section id="panel-recommendation" class="panel" hidden>
+        <div class="section-head">
+          <div>
+            <h2>이번 주 번호 추천</h2>
+            <p>과거 본번호의 출현 빈도를 분석해 6개 번호 조합을 생성합니다.</p>
+          </div>
+        </div>
+        <form id="recommendation-form" class="grid-form">
+          <label>
+            분석 기간
+            <select id="recommendation-window">
+              <option value="20">최근 20회</option>
+              <option value="50">최근 50회</option>
+              <option value="100" selected>최근 100회</option>
+            </select>
+          </label>
+          <label>
+            추천 게임 수
+            <select id="game-count">
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option selected>5</option>
+            </select>
+          </label>
+          <aside
+            class="recommendation-disclaimer wide"
+            aria-labelledby="recommendation-disclaimer-title"
+          >
+            <strong id="recommendation-disclaimer-title"
+              >추천 번호는 당첨을 보장하지 않습니다</strong
+            >
+            <p>
+              추천은 오락·참고용이며 당첨 예측이나 수익을 보장하지 않습니다. 각
+              추첨은 독립적이고 모든 조합의 1등 당첨 확률은 1/8,145,060으로
+              같습니다. 과거 출현 빈도가 미래 당첨 확률을 높이지 않습니다.
+              무리한 구매를 피하세요.
+            </p>
+          </aside>
+          <button type="submit" class="primary wide">번호 추천받기</button>
+        </form>
+        <div
+          id="recommendation-results"
+          class="result-area"
+          aria-live="polite"
+        ></div>
+      </section>
+      <section id="panel-filter" class="panel" hidden>
+        <div class="section-head">
+          <div>
+            <h2>회차 조건 검색</h2>
+            <p>
+              입력한 조건을 모두 만족하는 기록을 찾습니다. 보너스 번호는
+              제외합니다.
+            </p>
+          </div>
+        </div>
+        <form id="filter-form" class="grid-form">
+          <label>
+            시작일
+            <input type="date" id="start-date" />
+          </label>
+          <label>
+            종료일
+            <input type="date" id="end-date" />
+          </label>
+          <label class="wide">
+            포함 번호 (쉼표로 구분)
+            <input id="numbers" placeholder="예: 7, 22" inputmode="numeric" />
+          </label>
+          <label>
+            최소 당첨금 (원)
+            <input
+              type="number"
+              min="0"
+              id="min-prize"
+              placeholder="제한 없음"
+            />
+          </label>
+          <label>
+            최대 당첨금 (원)
+            <input
+              type="number"
+              min="0"
+              id="max-prize"
+              placeholder="제한 없음"
+            />
+          </label>
+          <label>
+            홀수 개수
+            <select id="odd-count">
+              <option value="">제한 없음</option>
+              <option>0</option>
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+              <option>6</option>
+            </select>
+          </label>
+          <label>
+            최소 연속 번호 쌍
+            <input type="number" id="pairs" min="0" max="5" value="0" />
+          </label>
+          <label>
+            최소 번호 합계
+            <input
+              form="filter-form"
+              type="number"
+              id="min-sum"
+              min="21"
+              max="255"
+              placeholder="제한 없음"
+            />
+          </label>
+          <label>
+            최대 번호 합계
+            <input
+              form="filter-form"
+              type="number"
+              id="max-sum"
+              min="21"
+              max="255"
+              placeholder="제한 없음"
+            />
+          </label>
+          <button class="primary wide" type="submit">
+            조건에 맞는 회차 찾기
+          </button>
+        </form>
+
+        <div id="filter-results" class="result-area" aria-live="polite"></div>
+      </section>
+      <section id="panel-compare" class="panel" hidden>
+        <div class="section-head">
+          <div>
+            <h2>검색 방식 비교</h2>
+            <p>
+              같은 후보군에서 유사도 순 검색과 관련성·다양성을 함께 고려하는
+              MMR을 비교합니다.
+            </p>
+          </div>
+        </div>
+        <form id="compare-form" class="grid-form">
+          <label class="wide">
+            비교 질문
+            <input
+              id="compare-question"
+              value="복권 당첨금 세금과 원천징수"
+              required
+            />
+          </label>
+          <label>
+            검색 후보 수
+            <input type="number" id="fetch-k" value="20" min="5" max="100" />
+          </label>
+          <label>
+            관련성 비중 λ
+            <output id="lambda-value">0.5</output>
+            <input
+              type="range"
+              id="lambda"
+              min="0"
+              max="1"
+              step="0.1"
+              value="0.5"
+            />
+          </label>
+          <label>
+            질문 답변에 사용할 검색 방식
+            <select id="search-type">
+              <option value="similarity">Similarity</option>
+              <option value="mmr">MMR</option>
+            </select>
+          </label>
+          <button class="primary" type="submit">두 방식 비교하기</button>
+        </form>
+        <div id="compare-results" class="result-area" aria-live="polite"></div>
+      </section>
+      <section id="panel-evaluation" class="panel" hidden>
+        <div class="section-head">
+          <div>
+            <h2>RAG 전후 평가</h2>
+            <p>
+              같은 모델과 질문으로 검색 전·후의 정확성, 인용, 근거 부족 처리와
+              시간을 비교합니다.
+            </p>
+          </div>
+        </div>
+        <p class="notice">
+          20개 질문을 각각 두 경로로 실행합니다. 기존 OpenAI 키를 사용하며 모델
+          사용량이 발생합니다. 평가에는 몇 분이 걸릴 수 있습니다.
+        </p>
+        <button id="run-evaluation" class="primary">
+          20문항 비교 평가 실행
+        </button>
+        <div id="evaluation-results" class="result-area"></div>
+        <a id="download-evaluation" hidden download="lottory-evaluation.json">
+          평가 결과 JSON 다운로드
+        </a>
+      </section>
+      <div id="feedback" role="status" aria-live="polite"></div>
+      <footer>
+        회차 데이터: 캐시로지(CC BY 4.0 표시), 원천 발표: 동행복권. AI 답변은
+        기존 OpenAI 설정을 사용합니다.
+        <br />
+        과거 번호 빈도는 미래 당첨 확률을 높이지 않습니다. 세금·지급 규정은 적용
+        법령과 공식 안내에서 최종 확인하세요.
+      </footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
