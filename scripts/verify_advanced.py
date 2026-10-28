@@ -1,4 +1,4 @@
-# 실제 API로 F2014/F2016을 검증하고 인증값을 제외한 결과를 저장한다.
+# 실제 API로 F014/F016을 검증하고 인증값을 제외한 결과를 저장한다.
 
 import json
 from datetime import datetime
